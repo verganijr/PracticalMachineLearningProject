@@ -5,7 +5,7 @@ output:
   pdf_document: default
 ---
 ###Executive Summary
-Using devices such as Jawbone Up, Nike FuelBand, and Fitbit it is now possible to collect a large amount of data about personal activity relatively inexpensively. These type of devices are part of the quantified self movement - a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks
+Using devices such as Jawbone Up, Nike FuelBand, and Fitbit it is now possible to collect a large amount of data about personal activity relatively inexpensively. These type of devices are part of the quantified self movement - a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks.
 
 The goal of this project is to predict the manner in which they did the exercise. This is the "class" variable in the training set. It is possible to use any of the other variables to predict with. This report describes how to build the model, how to use cross validation, what the expected out of sample error is, and the choices made based on the models evaluated.
 
@@ -31,6 +31,11 @@ if (!require('randomForest'))
   install.packages("randomForest")
 if (!require('e1071'))
   install.packages("e1071")
+if (!require('RGtk2'))
+  install.packages("RGtk2")
+if (!require('randomForest'))
+  install.packages("randomForest")
+
 library(ggplot2)
 library(caret)
 library(lattice)
@@ -40,13 +45,14 @@ library(RColorBrewer)
 library(rattle)
 library(randomForest)
 library(e1071)
+library(RGtk2)
+library(randomForest)
 
 ```
 
 ###Loading data sets
 
 ```{r}
-setwd("C:/Data Science/Practical-Machine-Learning-master/Practical-Machine-Learning")
 
 training <- read.csv("pml-training.csv",na.strings=c("NA","#DIV/0!", ""))
 ```
@@ -85,7 +91,7 @@ dim ( testing  )
 
 
 ###Zero variance predictors
-Diagnoses predictors that have one unique value (i.e. are zero variance predictors) or predictors that are have both of the following characteristics
+Diagnoses predictors that have one unique value (i.e. are zero variance predictors) or predictors that have both of the following characteristics
 ```{r}
 
 ColumnsZVar <- nearZeroVar(training, saveMetrics = TRUE)
@@ -94,7 +100,7 @@ training$classe = factor(training$classe)
 ```
 
 
-Partitioning the training data This validation dataset will allow us to perform cross validation when developing our model.
+Partitioning the training data. The validation dataset will allow us to perform cross validation when developing our model.
 
 
 ### Partitioning the training data set to allow cross-validation
@@ -109,7 +115,7 @@ TheTesting <- training[-subTrain, ]
 
 Dataset contains 59 variables, with the last column containing the 'class' variable we are trying to predict.
 
-### Modelprediction 1 : Using Decision Tree
+### Model Prediction 1 : Using Decision Tree
 ```{r}
 modelDT <- rpart(classe ~ ., data=TheTraining, method="class")
 ```
@@ -129,12 +135,11 @@ fancyRpartPlot (modelDT, main="Decision Tree")
 confusionMatrix(predictionDT,TheTesting$classe)
 ```
 The Confusion Matrix achieved  0.7394 % accuracy. Here, the 95% CI : (0.7269, 0.7516). The Kappa statistic of  0.6697  reflects the out-of-sample error. 
-For the above values is necessary to use the method Random Forest Model determineis much better estimator and predictor.
-
-
+For the above values is necessary to use the method Random Forest Model who is much better estimator and predictor.
 
 Applied the Random Forest Model and it has shown significant amount of accuracy in prediction.
-###Modelprediction 2 : Using Random Forest
+
+### Model Prediction 2 : Using Random Forest
 
 ```{r}
 modelRF <- randomForest(classe ~. , data=TheTraining, method="class")
@@ -155,20 +160,18 @@ The Confusion Matrix achieved 99.51% accuracy.in the 95% CI : (0.9927, 0.9969)  
 ###Decision
 
 As expected, Random Forest algorithm performed better than Decision Trees.
-Accuracy for Random Forest model was Accuracy : 0.9951  and (95% CI: ((0.9927, 0.9969))) compared to 95% CI : (0.7269, 0.7516) for Decision Tree model. 
+Accuracy for Random Forest model was Accuracy : 0.9955 and (95% CI: ((0.9932, 0.9972))) compared to 0.7394 and 95% CI : (0.7269, 0.7516) for Decision Tree model. 
 The random Forest model is choosen. The accuracy of the model is 0.995. The expected out-of-sample error is estimated at 0.005, or 0.5%. The expected out-of-sample error is calculated as 1 - accuracy for predictions made against the cross-validation set. Our Test data set comprises 20 cases. With an accuracy above 99% on our cross-validation data, we can expect that very few, or none, of the test samples will be missclassified.
 
 ###Conclusion
 
-Of the two Prediction Methods used in the study, accuracy was better method The Random Forest method since the Confusion Matrix achieves approximately 
-
-This model will be used for the final calculations is the project.
-
+Of the two Prediction Methods used in the study, accuracy was better with Random Forest model. Accuracy for Random Forest model was: 0.9955 and (95% CI: ((0.9932, 0.9972))) compared to 0.7394 and 95% CI : (0.7269, 0.7516) for Decision Tree model.
 
 ###Submission
 
+This model will be used for the final calculations in the project:
 
-```{r}
+```{r, echo=TRUE}
   pml_write_files = function(x){
   n = length(x)
   for(i in 1:n){
@@ -180,8 +183,6 @@ pml_write_files(predict(modelRF, testing[, -length(names(testing))]))
 rm(modelRF)
 rm(training)
 rm(testing)
-rm(validation)
 rm(pml_write_files)
 ```
-
 
